@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VerdantPlan – Daily Nutrition &amp; Meal Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--g:#00654a;--gl:#c9f7e3;--bg:#f6f8f8;--card:#fff;--in:#f0f2f3;--tx:#191c1d;--mu:#5b6360;--bd:#e6eaea}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:#fff;position:sticky;top:0;z-index:5;border-bottom:1px solid var(--bd)}
+.logo{display:flex;align-items:center;gap:8px;font-weight:600;font-size:16px}
+nav{display:flex;align-items:center;gap:22px}nav a{color:var(--g);text-decoration:none;font-weight:600;font-size:13px}
+.av{width:30px;height:30px;border-radius:50%;background:var(--g);display:grid;place-items:center;color:#fff;font-size:13px}
+main{max-width:1000px;margin:0 auto;padding:24px 20px 10px}
+.card{background:var(--card);border-radius:12px;padding:24px;margin-bottom:34px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.eyebrow{font-size:10.5px;font-weight:600;letter-spacing:.06em;color:var(--g);text-transform:uppercase;margin:0 0 6px}
+h1,h2{margin:0 0 4px;font-size:22px;font-weight:700}
+.sub{color:var(--mu);margin:0}
+.top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.pill{background:var(--in);border-radius:20px;padding:8px 14px;font-size:12px;font-weight:600;height:max-content}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:22px}
+label{display:block;font-size:12px;font-weight:600;color:var(--mu);margin-bottom:6px}
+.field{position:relative}
+input,select{width:100%;height:42px;border:0;border-radius:8px;background:var(--in);padding:0 14px;font:inherit;font-size:14px;color:var(--tx)}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--g)}
+.unit{position:absolute;right:14px;bottom:12px;color:var(--mu);font-size:12px}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--in);border-radius:8px;padding:4px;height:42px}
+.seg button{border:0;background:transparent;border-radius:6px;font:inherit;font-weight:600;color:var(--mu);cursor:pointer}
+.seg button.on{background:#fff;color:var(--g);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.btn{background:var(--g);color:#fff;border:0;border-radius:8px;height:42px;padding:0 26px;font:inherit;font-weight:600;cursor:pointer}
+.btn:hover{background:#00533d}
+.right{display:flex;justify-content:flex-end;margin-top:22px}
+.err{color:#b3261e;font-size:12px;margin-top:10px;min-height:16px;text-align:right}
+.badge{background:var(--gl);color:#0b4d38;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600}
+.targets{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:18px}
+.t{background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.t.main{background:var(--gl)}
+.t .h{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600;color:var(--mu)}
+.t.main .h{color:var(--tx)}
+.t .pct{background:var(--gl);color:#0b4d38;border-radius:20px;padding:3px 9px;font-size:10.5px}
+.big{font-size:32px;font-weight:800;margin:10px 0 8px}.big small{font-size:13px;font-weight:600;color:var(--mu)}
+.bar{height:6px;background:var(--bd);border-radius:6px;overflow:hidden;margin-bottom:8px}.bar i{display:block;height:100%;background:var(--g)}
+.cap{font-size:11.5px;color:var(--mu)}
+.plan{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:20px}
+.meal{background:var(--bg);border-radius:10px;padding:16px}
+.meal h3{margin:0 0 8px;font-size:15px;display:flex;justify-content:space-between}.meal h3 span{color:var(--g)}
+.meal ul{list-style:none;margin:0;padding:0}.meal li{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--bd);font-size:13px}
+.meal li em{font-style:normal;color:var(--mu)}
+.ptotal{margin-top:16px;background:var(--gl);border-radius:10px;padding:14px 18px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-weight:700}
+.add{display:grid;grid-template-columns:1fr 200px 140px;gap:16px;align-items:end;background:var(--in);border-radius:10px;padding:16px;margin:20px 0 18px}
+.add input,.add select{background:#fff}
+.add .btn{width:100%}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:560px}
+th{background:var(--in);font-size:11.5px;color:var(--mu);font-weight:600;padding:12px 14px;text-align:right}
+th:first-child,td:first-child{text-align:left}
+td{padding:14px;text-align:right;font-weight:500;border-bottom:1px solid #f1f3f3}
+td:first-child{font-weight:600}td.p{color:#2b5f8a}
+tr.tot td{background:var(--gl);font-weight:700;border:0}tr.tot td:last-child,tr.tot td.k{color:var(--g)}
+.x{background:none;border:0;cursor:pointer;color:var(--mu);font-size:16px}.x:hover{color:#b3261e}
+.empty{text-align:center;color:var(--mu);padding:22px!important;font-weight:400!important}
+.rem{margin-top:12px;font-size:12.5px;color:var(--mu)}
+.note{background:#fff8e6;border-left:4px solid #e0a800;border-radius:8px;padding:14px 16px;font-size:13px;color:#4d3d00;margin-bottom:34px}
+footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:20px 28px;color:var(--mu);font-size:11.5px;background:#f0f2f3}
+@media(max-width:760px){.grid3,.targets,.plan{grid-template-columns:1fr 1fr}.add{grid-template-columns:1fr}nav a{display:none}}
+@media(max-width:520px){.grid3,.targets,.plan{grid-template-columns:1fr}}
+</style></head><body>
+<header><div class="logo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00654a" stroke-width="2"><path d="M5 19C5 9 11 4 20 4c0 9-5 15-15 15zM5 19l8-8"/></svg>VerdantPlan</div>
+<nav><a href="#profile">Profile</a><a href="#results">Results</a><a href="#mealcalc">Meal Calculator</a><div class="av">●</div></nav></header>
+<main>
+<section class="card" id="profile">
+<div class="top"><div><p class="eyebrow">01 / Personal Profile</p><h1>Calculate Your Daily Targets</h1><p class="sub">Enter your biometrics and activity level to tailor your daily calorie and macronutrient plan.</p></div><div class="pill">✓ Mifflin-St Jeor Formula</div></div>
+<div class="grid3">
+<div><label>Gender</label><div class="seg" id="seg"><button type="button" class="on" data-v="male">♂ Male</button><button type="button" data-v="female">♀ Female</button></div></div>
+<div><label for="age">Age (years)</label><div class="field"><input id="age" type="number" value="28" min="15" max="100"><span class="unit">yrs</span></div></div>
+<div><label for="ht">Height (cm)</label><div class="field"><input id="ht" type="number" value="175" min="120" max="230"><span class="unit">cm</span></div></div>
+<div><label for="wt">Weight (kg)</label><div class="field"><input id="wt" type="number" value="72" min="30" max="300" step="0.1"><span class="unit">kg</span></div></div>
+<div><label for="act">Activity Level</label><select id="act"><option value="1.2">Sedentary (little or no exercise)</option><option value="1.375">Lightly Active (1–3 days/week)</option><option value="1.55" selected>Moderately Active (3–5 days/week)</option><option value="1.725">Very Active (6–7 days/week)</option><option value="1.9">Extra Active (physical job + training)</option></select></div>
+<div><label for="goal">Goal</label><select id="goal"><option value="-500">Lose Weight</option><option value="0" selected>Maintain Weight</option><option value="300">Gain Weight</option></select></div>
+</div>
+<div class="right"><button class="btn" id="calc">Calculate Plan</button></div><div class="err" id="err"></div>
+</section>
+
+<section id="results">
+<p class="eyebrow">02 / Daily Targets</p>
+<div class="top"><h2>Your Recommended Intake</h2><span class="badge">● Balanced Macro Split</span></div>
+<div class="targets">
+<div class="t main"><div class="h">Daily Target</div><div class="big"><span id="kcal">–</span> <small>kcal</small></div><div class="cap" id="kcap"></div></div>
+<div class="t"><div class="h">Protein <span class="pct">28% of kcal</span></div><div class="big"><span id="pg">–</span>g</div><div class="bar"><i style="width:28%"></i></div><div class="cap">Supports lean muscle repair</div></div>
+<div class="t"><div class="h">Carbs <span class="pct">45% of kcal</span></div><div class="big"><span id="cg">–</span>g</div><div class="bar"><i style="width:45%"></i></div><div class="cap">Primary fuel for daily focus</div></div>
+<div class="t"><div class="h">Fat <span class="pct">27% of kcal</span></div><div class="big"><span id="fg">–</span>g</div><div class="bar"><i style="width:27%"></i></div><div class="cap">Essential hormone &amp; cell health</div></div>
+</div>
+<div class="card" style="margin-top:22px">
+<h2 style="font-size:18px">Sample One-Day Meal Plan</h2><p class="sub">Portions are scaled to match your calorie target.</p>
+<div class="plan" id="plan"></div>
+<div class="ptotal" id="ptotal"></div>
+</div>
+<div class="note" id="note">This tool provides general information only and is not medical advice. Consult a doctor or registered dietitian before changing your diet, especially if you have a health condition. Recommendations never go below 1,200 kcal per day.</div>
+</section>
+
+<section class="card" id="calc-sec"><span id="mealcalc"></span>
+<p class="eyebrow">03 / Daily Log</p>
+<div class="top"><h2>Meal Calculator</h2><p class="sub">Add foods by portion size to track your meal totals against your daily target.</p></div>
+<div class="add"><div><label for="food">Food Item</label><select id="food"></select></div><div><label for="g">Portion (g)</label><div class="field"><input id="g" type="number" value="100" min="1" max="2000"><span class="unit">g</span></div></div><button class="btn" id="addb">+ Add</button></div>
+<div class="tw"><table><thead><tr><th>Food Item</th><th>Portion (g)</th><th>Protein</th><th>Carbs</th><th>Fat</th><th>Calories</th><th style="text-align:center">Action</th></tr></thead><tbody id="log"></tbody></table></div>
+<div class="rem" id="rem"></div>
+</section>
+</main>
+<footer><span>© 2025 VerdantPlan. Daily Nutrition &amp; Meal Calculator.</span><span>Crafted for calm, mindful nutrition tracking.</span></footer>
+<script>
+const CSV=`food,calories_per_100g,protein_g,carbs_g,fat_g
+chicken breast (cooked),165,31.0,0.0,3.6
+rice (cooked),130,2.7,28.0,0.3
+eggs,143,12.6,0.7,9.5
+oats (dry),389,16.9,66.3,6.9
+banana,98,1.1,22.8,0.3
+salmon (cooked),208,22.1,0.0,12.4
+broccoli (raw),41,2.8,6.6,0.4
+potato (boiled),87,1.9,20.1,0.1
+bread (white),265,9.0,49.0,3.2
+milk (semi-skimmed),47,3.4,4.8,1.7
+yoghurt (plain),61,3.5,4.7,3.3
+olive oil,884,0.0,0.0,100.0
+apple,58,0.3,13.8,0.2
+orange,47,0.9,11.8,0.1
+beef mince 10% fat (cooked),217,26.1,0.0,11.8
+pork loin (cooked),242,27.3,0.0,13.9
+tuna (canned in water),116,25.5,0.0,0.8
+cod (cooked),105,22.8,0.0,0.9
+pasta (cooked),158,5.8,30.9,0.9
+wholemeal bread,247,13.0,41.0,3.4
+cheddar cheese,403,24.9,1.3,33.1
+butter,717,0.9,0.1,81.1
+almonds,579,21.2,21.6,49.9
+peanut butter,588,25.1,20.0,50.4
+lentils (cooked),116,9.0,20.1,0.4
+chickpeas (cooked),164,8.9,27.4,2.6
+black beans (cooked),132,8.9,23.7,0.5
+tofu (firm),144,15.8,2.8,8.7
+spinach (raw),30,2.9,3.6,0.4
+carrot (raw),41,0.9,9.6,0.2
+tomato,21,0.9,3.9,0.2
+onion,40,1.1,9.3,0.1
+cucumber,18,0.7,3.6,0.1
+sweet potato (baked),90,2.0,20.7,0.2
+avocado,160,2.0,8.5,14.7
+strawberries,36,0.7,7.7,0.3
+cottage cheese,98,11.1,3.4,4.3
+turkey breast (cooked),135,30.1,0.0,0.7
+quinoa (cooked),120,4.4,21.3,1.9
+dark chocolate (70-85%),598,7.8,45.9,42.6`;
+const foods=CSV.trim().split(/\r?\n/).slice(1).map(l=>{const c=l.split(',');return{n:c[0],k:+c[1],p:+c[2],c:+c[3],f:+c[4]}});
+const byName=Object.fromEntries(foods.map(f=>[f.n,f]));
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const $=id=>document.getElementById(id);
+let gender='male',target=0;
+document.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>{gender=b.dataset.v;document.querySelectorAll('#seg button').forEach(x=>x.classList.toggle('on',x===b))});
+
+// Sample meals: base grams, scaled so each meal hits its share of the target
+const MEALS=[
+ {t:'Breakfast',s:.25,i:[['oats (dry)',60],['milk (semi-skimmed)',200],['banana',100],['almonds',15]]},
+ {t:'Lunch',s:.35,i:[['chicken breast (cooked)',150],['rice (cooked)',150],['broccoli (raw)',100],['olive oil',10]]},
+ {t:'Dinner',s:.30,i:[['salmon (cooked)',130],['sweet potato (baked)',200],['spinach (raw)',80],['olive oil',5]]},
+ {t:'Snacks',s:.10,i:[['yoghurt (plain)',150],['apple',150],['almonds',10]]}
+];
+const kc=(n,g)=>byName[n].k*g/100;
+
+function calculate(){
+  const age=+$('age').value,h=+$('ht').value,w=+$('wt').value;
+  if(!(age>=15&&age<=100&&h>=120&&h<=230&&w>=30&&w<=300)){$('err').textContent='Please enter valid values: age 15–100, height 120–230 cm, weight 30–300 kg.';return}
+  $('err').textContent='';
+  const bmr=10*w+6.25*h-5*age+(gender==='male'?5:-161);
+  let raw=bmr*+$('act').value+ +$('goal').value, floored=raw<1200;
+  target=Math.round(Math.max(1200,raw)/10)*10;
+  $('kcal').textContent=target.toLocaleString('en-GB');
+  $('kcap').textContent=floored?'↗ Set to the 1,200 kcal safe minimum':'↗ '+({'-500':'Gentle calorie deficit','0':'Optimal energy balance','300':'Modest calorie surplus'})[$('goal').value];
+  $('pg').textContent=Math.round(target*.28/4);$('cg').textContent=Math.round(target*.45/4);$('fg').textContent=Math.round(target*.27/9);
+  renderPlan();renderLog();
+}
+function renderPlan(){
+  let tk=0,tp=0,tc=0,tf=0;
+  $('plan').innerHTML=MEALS.map(m=>{
+    const base=m.i.reduce((a,[n,g])=>a+kc(n,g),0),sc=target*m.s/base;
+    let mk=0;
+    const li=m.i.map(([n,g])=>{const gr=Math.max(5,Math.round(g*sc/5)*5),f=byName[n];mk+=kc(n,gr);tp+=f.p*gr/100;tc+=f.c*gr/100;tf+=f.f*gr/100;return '<li><span>'+cap(n)+' <em>'+gr+' g</em></span><span>'+Math.round(kc(n,gr))+' kcal</span></li>'}).join('');
+    tk+=mk;return '<div class="meal"><h3>'+m.t+'<span>'+Math.round(mk)+' kcal</span></h3><ul>'+li+'</ul></div>'}).join('');
+  $('ptotal').innerHTML='<span>Plan total: '+Math.round(tk)+' kcal (target '+target.toLocaleString('en-GB')+')</span><span>P '+Math.round(tp)+'g · C '+Math.round(tc)+'g · F '+Math.round(tf)+'g</span>';
+}
+
+// Meal calculator
+$('food').innerHTML=foods.map((f,i)=>'<option value="'+i+'">'+cap(f.n)+' ('+f.k+' kcal / 100g)</option>').join('');
+let log=[];
+$('addb').onclick=()=>{const g=+$('g').value;if(!(g>0))return;log.push({f:foods[+$('food').value],g});renderLog()};
+$('g').addEventListener('keydown',e=>{if(e.key==='Enter')$('addb').click()});
+const r1=x=>x.toFixed(1);
+function renderLog(){
+  let tg=0,tp=0,tc=0,tf=0,tk=0;
+  let rows=log.map((e,i)=>{const r=e.g/100,p=e.f.p*r,c=e.f.c*r,f=e.f.f*r,k=e.f.k*r;tg+=e.g;tp+=p;tc+=c;tf+=f;tk+=k;
+    return '<tr><td>'+cap(e.f.n)+'</td><td class="p">'+e.g+' g</td><td>'+r1(p)+' g</td><td>'+r1(c)+' g</td><td>'+r1(f)+' g</td><td>'+Math.round(k)+' kcal</td><td style="text-align:center"><button class="x" data-i="'+i+'" aria-label="Remove">🗑</button></td></tr>'}).join('');
+  if(!log.length)rows='<tr><td colspan="7" class="empty">No foods added yet. Pick a food, enter grams and press Add.</td></tr>';
+  rows+='<tr class="tot"><td>Total Calories &amp; Macros</td><td>'+tg+' g</td><td>'+r1(tp)+' g</td><td>'+r1(tc)+' g</td><td>'+r1(tf)+' g</td><td class="k">'+Math.round(tk)+' kcal</td><td></td></tr>';
+  $('log').innerHTML=rows;
+  $('rem').textContent=target?(tk<=target?Math.round(target-tk)+' kcal remaining of your '+target.toLocaleString('en-GB')+' kcal target.':Math.round(tk-target)+' kcal over your '+target.toLocaleString('en-GB')+' kcal target.'):'';
+}
+$('log').onclick=e=>{const b=e.target.closest('.x');if(b){log.splice(+b.dataset.i,1);renderLog()}};
+$('calc').onclick=calculate;
+calculate();
+</script></body></html>

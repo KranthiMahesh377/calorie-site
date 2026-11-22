@@ -1,0 +1,1387 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NutriCalc — Daily Calorie &amp; Macro Planner</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-subtle: #f1f5f9;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --ink: #0f172a;
+      --ink-muted: #475569;
+      --ink-subtle: #64748b;
+      --accent: #0f766e;
+      --accent-hover: #115e59;
+      --accent-soft: #f0fdfa;
+      --accent-border: #99f6e4;
+      --carbs: #0284c7;
+      --fat: #d97706;
+      --warn-bg: #fffbeb;
+      --warn-border: #fde68a;
+      --warn-ink: #78350f;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .mono {
+      font-family: var(--mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(255, 255, 255, 0.96);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(6px);
+    }
+
+    .topbar-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+    }
+
+    .brand {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .nav-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink-muted);
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .nav-links a:hover { color: var(--ink); }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #ffffff;
+      background: var(--accent);
+      border: 1px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      text-decoration: none;
+    }
+
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-primary:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .btn-secondary:hover { background: #ccfbf1; }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ink-muted);
+      background: var(--surface-subtle);
+      border: 1px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .btn-ghost:hover {
+      color: var(--ink);
+      background: var(--border);
+    }
+
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 40px 24px 64px;
+    }
+
+    .hero {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 44px;
+    }
+
+    .hero-kicker {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 0 0 8px;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: clamp(28px, 3.6vw, 36px);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.15;
+      max-width: 620px;
+    }
+
+    .hero p.lead {
+      margin: 0;
+      font-size: 15px;
+      color: var(--ink-muted);
+      max-width: 640px;
+    }
+
+    .notice-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 12px;
+      color: var(--ink-muted);
+      max-width: 340px;
+    }
+
+    .section {
+      margin-bottom: 52px;
+      scroll-margin-top: 84px;
+    }
+
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+    }
+
+    .section-head p {
+      margin: 4px 0 0;
+      font-size: 14px;
+      color: var(--ink-muted);
+    }
+
+    .grid-12 {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    .col-7 { grid-column: span 7 / span 7; }
+    .col-5 { grid-column: span 5 / span 5; }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .field { margin-bottom: 16px; }
+    .field:last-child { margin-bottom: 0; }
+
+    .field label, .field-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-muted);
+      margin-bottom: 6px;
+    }
+
+    input[type="number"],
+    input[type="text"],
+    select {
+      width: 100%;
+      height: 40px;
+      padding: 0 12px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--ink);
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+    }
+
+    input[type="number"]:focus,
+    input[type="text"]:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 4px;
+      padding: 4px;
+      background: var(--surface-subtle);
+      border-radius: 8px;
+    }
+
+    .segmented-3 {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      background: #e2e8f0;
+      border-radius: 8px;
+    }
+
+    .seg-btn {
+      border: none;
+      background: transparent;
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-muted);
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .seg-btn.active {
+      background: var(--surface);
+      color: var(--ink);
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    }
+
+    .target-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .target-number {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 4px 0 0;
+    }
+
+    .target-unit {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--ink-subtle);
+    }
+
+    .floor-alert {
+      background: var(--warn-bg);
+      border: 1px solid var(--warn-border);
+      color: var(--warn-ink);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 12px;
+      display: none;
+    }
+
+    .floor-alert.visible { display: block; }
+
+    .submetrics {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      padding: 14px 0;
+      border-top: 1px solid var(--surface-subtle);
+      border-bottom: 1px solid var(--surface-subtle);
+    }
+
+    .submetric-label { font-size: 12px; color: var(--ink-subtle); margin: 0; }
+    .submetric-val { font-size: 15px; font-weight: 600; margin: 2px 0 0; }
+
+    .macro-bar {
+      height: 10px;
+      width: 100%;
+      border-radius: 999px;
+      overflow: hidden;
+      display: flex;
+      background: var(--surface-subtle);
+      margin: 10px 0 14px;
+    }
+
+    .macro-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .macro-item { padding-top: 8px; }
+    .macro-item.protein { border-top: 2px solid var(--accent); }
+    .macro-item.carbs { border-top: 2px solid var(--carbs); }
+    .macro-item.fat { border-top: 2px solid var(--fat); }
+
+    .macro-grams { font-size: 18px; font-weight: 700; margin: 2px 0; }
+    .macro-kcal { font-size: 12px; color: var(--ink-subtle); margin: 0; }
+
+    .summary-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 24px;
+      margin-bottom: 20px;
+    }
+
+    .meals-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    .meal-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .meal-head {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--surface-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .meal-head h3 { margin: 0; font-size: 16px; font-weight: 600; }
+    .meal-sub { margin: 2px 0 0; font-size: 12px; color: var(--ink-subtle); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th {
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-subtle);
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--surface-subtle);
+    }
+
+    td {
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--surface-subtle);
+    }
+
+    tr:last-child td { border-bottom: none; }
+    .right { text-align: right; }
+    .cap { text-transform: capitalize; }
+
+    .calc-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .calc-form {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      background: #f8fafc;
+    }
+
+    .calc-form-row {
+      display: grid;
+      grid-template-columns: 3fr 5fr 2fr 2fr;
+      gap: 16px;
+      align-items: end;
+    }
+
+    .calc-preview {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+
+    .calc-status-bar {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      align-items: center;
+    }
+
+    .progress-track {
+      height: 8px;
+      background: var(--surface-subtle);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width 150ms ease;
+    }
+
+    .progress-fill.over { background: #d97706; }
+
+    .inline-grams {
+      width: 78px !important;
+      height: 32px !important;
+      text-align: right;
+      padding: 0 8px !important;
+    }
+
+    .btn-remove {
+      border: none;
+      background: transparent;
+      color: var(--ink-subtle);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .btn-remove:hover {
+      color: #dc2626;
+      background: #fef2f2;
+    }
+
+    tfoot tr {
+      background: var(--bg);
+      border-top: 2px solid var(--border);
+      font-weight: 700;
+    }
+
+    .empty-state {
+      padding: 40px 24px;
+      text-align: center;
+      color: var(--ink-muted);
+      font-size: 14px;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+      font-size: 12px;
+      color: var(--ink-subtle);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .col-7, .col-5 { grid-column: span 12 / span 12; }
+      .meals-grid { grid-template-columns: 1fr; }
+      .calc-form-row { grid-template-columns: 1fr; }
+      .calc-status-bar, .summary-strip { grid-template-columns: repeat(2, 1fr); }
+      .nav-links { display: none; }
+    }
+
+    @media (max-width: 560px) {
+      .form-grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+<script src="/_aistudio-iframe.js?v=29045eb3"></script></head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="#top" class="brand">NutriCalc</a>
+      <nav class="nav-links" aria-label="Section navigation">
+        <a href="#section-targets">Targets</a>
+        <a href="#section-meal-plan">Meal Plan</a>
+        <a href="#section-calculator">Meal Calculator</a>
+      </nav>
+      <button type="button" id="btn-reset-all" class="btn-primary">Reset Defaults</button>
+    </div>
+  </header>
+
+  <main id="top" class="container">
+    <section class="hero">
+      <div>
+        <p class="hero-kicker">Mifflin-St Jeor Calculator · Dynamic Meal Plan · 40 CSV Foods</p>
+        <h1>Daily Calorie &amp; Macro Planner</h1>
+        <p class="lead">
+          Calculate your daily calorie target and macronutrient split, inspect a sample one-day meal
+          plan scaled to your goal, and log exact food portions in grams.
+        </p>
+      </div>
+      <div class="notice-box">
+        <strong>General Information Notice:</strong> This tool provides general nutritional
+        estimates only and is not medical advice. Never fewer than 1,200 kcal/day is recommended.
+      </div>
+    </section>
+
+    <!-- Section 1 -->
+    <section id="section-targets" class="section">
+      <div class="section-head">
+        <div>
+          <h2>01. Daily Calorie &amp; Macro Targets</h2>
+          <p>Calculated using the Mifflin-St Jeor equation and your activity multiplier.</p>
+        </div>
+      </div>
+
+      <div class="grid-12">
+        <div class="col-7 panel">
+          <div class="form-grid-2">
+            <div>
+              <span class="field-label">Gender</span>
+              <div class="segmented" role="group" aria-label="Gender">
+                <button type="button" class="seg-btn active" data-gender="female">Female</button>
+                <button type="button" class="seg-btn" data-gender="male">Male</button>
+              </div>
+            </div>
+            <div>
+              <label for="age" class="field-label">Age (years)</label>
+              <input id="age" type="number" min="15" max="100" value="30" class="mono" />
+            </div>
+            <div>
+              <label for="height" class="field-label">Height (cm)</label>
+              <input id="height" type="number" min="100" max="250" value="168" class="mono" />
+            </div>
+            <div>
+              <label for="weight" class="field-label">Weight (kg)</label>
+              <input id="weight" type="number" min="30" max="300" step="0.5" value="66" class="mono" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="activity">Activity level</label>
+            <select id="activity">
+              <option value="1.2">Sedentary (little or no exercise)</option>
+              <option value="1.375">Lightly active (1–3 days/week)</option>
+              <option value="1.55" selected>Moderately active (3–5 days/week)</option>
+              <option value="1.725">Very active (6–7 days/week)</option>
+              <option value="1.9">Extra active (physical job or twice-daily training)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="goal">Goal</label>
+            <select id="goal">
+              <option value="lose">Lose weight (-500 kcal/day)</option>
+              <option value="mild_lose" selected>Mild weight loss (-250 kcal/day)</option>
+              <option value="maintain">Maintain weight (0 kcal/day)</option>
+              <option value="mild_gain">Mild weight gain (+250 kcal/day)</option>
+              <option value="gain">Gain weight (+500 kcal/day)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="col-5 panel target-card">
+          <div>
+            <p class="submetric-label">Recommended Daily Target</p>
+            <p class="target-number mono">
+              <span id="out-target-cal">1,748</span> <span class="target-unit">kcal/day</span>
+            </p>
+          </div>
+
+          <div id="floor-alert" class="floor-alert">
+            Calculated estimate (<span id="out-raw-cal">0</span> kcal) was raised to the
+            <strong>1,200 kcal/day minimum floor</strong>. This tool never suggests fewer than 1,200
+            calories a day.
+          </div>
+
+          <div class="submetrics">
+            <div>
+              <p class="submetric-label">Basal Metabolic Rate (BMR)</p>
+              <p class="submetric-val mono"><span id="out-bmr">1,419</span> kcal</p>
+            </div>
+            <div>
+              <p class="submetric-label">Maintenance (TDEE)</p>
+              <p class="submetric-val mono"><span id="out-tdee">2,199</span> kcal</p>
+            </div>
+          </div>
+
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:12px; font-weight:600; color:var(--ink-muted);">Daily Macro Split</span>
+              <span id="out-split-label" class="mono" style="font-size:12px; color:var(--ink-subtle);">30% P · 40% C · 30% F</span>
+            </div>
+            <div class="macro-bar">
+              <div id="bar-p" style="width:30%; background:var(--accent);"></div>
+              <div id="bar-c" style="width:40%; background:var(--carbs);"></div>
+              <div id="bar-f" style="width:30%; background:var(--fat);"></div>
+            </div>
+            <div class="macro-grid">
+              <div class="macro-item protein">
+                <p class="submetric-label">Protein</p>
+                <p id="out-protein-g" class="macro-grams mono">131g</p>
+                <p id="out-protein-kcal" class="macro-kcal mono">524 kcal</p>
+              </div>
+              <div class="macro-item carbs">
+                <p class="submetric-label">Carbs</p>
+                <p id="out-carbs-g" class="macro-grams mono">175g</p>
+                <p id="out-carbs-kcal" class="macro-kcal mono">700 kcal</p>
+              </div>
+              <div class="macro-item fat">
+                <p class="submetric-label">Fat</p>
+                <p id="out-fat-g" class="macro-grams mono">58g</p>
+                <p id="out-fat-kcal" class="macro-kcal mono">522 kcal</p>
+              </div>
+            </div>
+          </div>
+
+          <p style="margin:0; font-size:12px; color:var(--ink-subtle); border-top:1px solid var(--surface-subtle); padding-top:10px;">
+            General information only, not medical advice. Minimum floor: 1,200 kcal/day.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2 -->
+    <section id="section-meal-plan" class="section">
+      <div class="section-head">
+        <div>
+          <h2>02. Sample One-Day Meal Plan</h2>
+          <p>
+            Portions built from the food database and scaled to match your
+            <strong id="plan-target-label" class="mono">1,748 kcal</strong> target.
+          </p>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px;">
+          <div class="segmented-3" role="group" aria-label="Meal plan style">
+            <button type="button" class="seg-btn active" data-plan="balanced">Balanced</button>
+            <button type="button" class="seg-btn" data-plan="high_protein">High Protein</button>
+            <button type="button" class="seg-btn" data-plan="plant_forward">Plant-Forward</button>
+          </div>
+          <button type="button" id="btn-load-full-plan" class="btn-secondary">
+            Load Full Day into Calculator
+          </button>
+        </div>
+      </div>
+
+      <div class="summary-strip">
+        <div>
+          <p class="submetric-label">Sample Plan Total</p>
+          <p id="plan-total-cal" class="submetric-val mono" style="font-size:18px;">0 kcal</p>
+        </div>
+        <div>
+          <p class="submetric-label">Plan Protein</p>
+          <p id="plan-total-p" class="submetric-val mono" style="font-size:18px;">0 g</p>
+        </div>
+        <div>
+          <p class="submetric-label">Plan Carbs</p>
+          <p id="plan-total-c" class="submetric-val mono" style="font-size:18px;">0 g</p>
+        </div>
+        <div>
+          <p class="submetric-label">Plan Fat</p>
+          <p id="plan-total-f" class="submetric-val mono" style="font-size:18px;">0 g</p>
+        </div>
+      </div>
+
+      <div id="meals-container" class="meals-grid"></div>
+    </section>
+
+    <!-- Section 3 -->
+    <section id="section-calculator" class="section">
+      <div class="section-head">
+        <div>
+          <h2>03. Meal Calculator</h2>
+          <p>Pick foods from the CSV dataset, enter grams, and track your running totals.</p>
+        </div>
+        <button type="button" id="btn-clear-calc" class="btn-ghost">Clear All</button>
+      </div>
+
+      <div class="calc-panel">
+        <form id="calc-form" class="calc-form">
+          <div class="calc-form-row">
+            <div>
+              <label for="food-filter" class="field-label">Filter foods (40)</label>
+              <input id="food-filter" type="text" placeholder="e.g. salmon, oats..." />
+            </div>
+            <div>
+              <label for="food-select" class="field-label">Food (from CSV)</label>
+              <select id="food-select" class="cap"></select>
+            </div>
+            <div>
+              <label for="food-grams" class="field-label">Grams (g)</label>
+              <input id="food-grams" type="number" min="1" max="5000" step="1" value="150" class="mono" />
+            </div>
+            <div>
+              <button type="submit" id="btn-add-food" class="btn-primary" style="width:100%; height:40px; font-size:14px;">
+                + Add
+              </button>
+            </div>
+          </div>
+          <div id="calc-preview" class="calc-preview"></div>
+        </form>
+
+        <div class="calc-status-bar">
+          <div>
+            <p class="submetric-label">Logged Calories</p>
+            <p class="submetric-val mono" style="font-size:18px;">
+              <span id="calc-logged-cal">0</span>
+              <span style="font-size:12px; font-weight:400; color:var(--ink-subtle);">
+                / <span id="calc-target-cal">1,748</span> kcal
+              </span>
+            </p>
+          </div>
+          <div>
+            <p class="submetric-label">Protein</p>
+            <p class="submetric-val mono">
+              <span id="calc-logged-p">0.0</span> g
+              <span style="font-size:12px; font-weight:400; color:var(--ink-subtle);">
+                / <span id="calc-target-p">131</span> g
+              </span>
+            </p>
+          </div>
+          <div>
+            <p class="submetric-label">Carbs</p>
+            <p class="submetric-val mono">
+              <span id="calc-logged-c">0.0</span> g
+              <span style="font-size:12px; font-weight:400; color:var(--ink-subtle);">
+                / <span id="calc-target-c">175</span> g
+              </span>
+            </p>
+          </div>
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:12px;">
+              <span id="calc-remaining-text" style="color:var(--ink-muted);">0 kcal remaining</span>
+              <span id="calc-pct-text" class="mono" style="font-weight:600;">0%</span>
+            </div>
+            <div class="progress-track">
+              <div id="calc-progress-fill" class="progress-fill" style="width:0%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="calc-table-wrap"></div>
+      </div>
+    </section>
+
+    <footer>
+      <p style="margin:0; max-width:720px;">
+        <strong>Disclaimer:</strong> All calorie targets, macronutrient breakdowns, and sample meal
+        plans are general information for educational purposes only and do not constitute medical
+        advice. Daily calorie targets are never suggested below 1,200 kcal/day.
+      </p>
+      <p style="margin:0;">Standalone Offline HTML · No installs required</p>
+    </footer>
+  </main>
+
+  <script>
+    (function () {
+      const CSV_TEXT = `food,calories_per_100g,protein_g,carbs_g,fat_g
+chicken breast (cooked),165,31.0,0.0,3.6
+rice (cooked),130,2.7,28.0,0.3
+eggs,143,12.6,0.7,9.5
+oats (dry),389,16.9,66.3,6.9
+banana,98,1.1,22.8,0.3
+salmon (cooked),208,22.1,0.0,12.4
+broccoli (raw),41,2.8,6.6,0.4
+potato (boiled),87,1.9,20.1,0.1
+bread (white),265,9.0,49.0,3.2
+milk (semi-skimmed),47,3.4,4.8,1.7
+yoghurt (plain),61,3.5,4.7,3.3
+olive oil,884,0.0,0.0,100.0
+apple,58,0.3,13.8,0.2
+orange,47,0.9,11.8,0.1
+beef mince 10% fat (cooked),217,26.1,0.0,11.8
+pork loin (cooked),242,27.3,0.0,13.9
+tuna (canned in water),116,25.5,0.0,0.8
+cod (cooked),105,22.8,0.0,0.9
+pasta (cooked),158,5.8,30.9,0.9
+wholemeal bread,247,13.0,41.0,3.4
+cheddar cheese,403,24.9,1.3,33.1
+butter,717,0.9,0.1,81.1
+almonds,579,21.2,21.6,49.9
+peanut butter,588,25.1,20.0,50.4
+lentils (cooked),116,9.0,20.1,0.4
+chickpeas (cooked),164,8.9,27.4,2.6
+black beans (cooked),132,8.9,23.7,0.5
+tofu (firm),144,15.8,2.8,8.7
+spinach (raw),30,2.9,3.6,0.4
+carrot (raw),41,0.9,9.6,0.2
+tomato,21,0.9,3.9,0.2
+onion,40,1.1,9.3,0.1
+cucumber,18,0.7,3.6,0.1
+sweet potato (baked),90,2.0,20.7,0.2
+avocado,160,2.0,8.5,14.7
+strawberries,36,0.7,7.7,0.3
+cottage cheese,98,11.1,3.4,4.3
+turkey breast (cooked),135,30.1,0.0,0.7
+quinoa (cooked),120,4.4,21.3,1.9
+dark chocolate (70-85%),598,7.8,45.9,42.6`;
+
+      const FOODS = CSV_TEXT.trim().split('\n').slice(1).map((line) => {
+        const [name, cal, p, c, f] = line.split(',');
+        return {
+          name: name.trim(),
+          cal: Number(cal),
+          p: Number(p),
+          c: Number(c),
+          f: Number(f),
+        };
+      });
+      const FOOD_MAP = new Map(FOODS.map((item) => [item.name, item]));
+
+      const GOALS = {
+        lose: { delta: -500, p: 30, c: 40, f: 30 },
+        mild_lose: { delta: -250, p: 30, c: 40, f: 30 },
+        maintain: { delta: 0, p: 25, c: 45, f: 30 },
+        mild_gain: { delta: 250, p: 25, c: 50, f: 25 },
+        gain: { delta: 500, p: 25, c: 50, f: 25 },
+      };
+
+      const PLAN_TEMPLATES = {
+        balanced: [
+          { id: 'breakfast', label: 'Breakfast', items: [['oats (dry)', 60], ['milk (semi-skimmed)', 200], ['banana', 110], ['almonds', 15]] },
+          { id: 'lunch', label: 'Lunch', items: [['chicken breast (cooked)', 150], ['rice (cooked)', 200, true], ['broccoli (raw)', 100], ['olive oil', 8]] },
+          { id: 'dinner', label: 'Dinner', items: [['salmon (cooked)', 140], ['sweet potato (baked)', 200], ['spinach (raw)', 60], ['tomato', 100]] },
+          { id: 'snacks', label: 'Snacks', items: [['yoghurt (plain)', 150], ['apple', 150], ['peanut butter', 15]] },
+        ],
+        high_protein: [
+          { id: 'breakfast', label: 'Breakfast', items: [['eggs', 150], ['wholemeal bread', 80], ['avocado', 50], ['orange', 140]] },
+          { id: 'lunch', label: 'Lunch', items: [['turkey breast (cooked)', 160], ['quinoa (cooked)', 200, true], ['spinach (raw)', 60], ['tomato', 100], ['olive oil', 7]] },
+          { id: 'dinner', label: 'Dinner', items: [['beef mince 10% fat (cooked)', 150], ['pasta (cooked)', 180], ['carrot (raw)', 80], ['broccoli (raw)', 100]] },
+          { id: 'snacks', label: 'Snacks', items: [['cottage cheese', 180], ['strawberries', 120], ['almonds', 15]] },
+        ],
+        plant_forward: [
+          { id: 'breakfast', label: 'Breakfast', items: [['oats (dry)', 65], ['milk (semi-skimmed)', 200], ['strawberries', 120], ['peanut butter', 18]] },
+          { id: 'lunch', label: 'Lunch', items: [['chickpeas (cooked)', 170], ['quinoa (cooked)', 180, true], ['spinach (raw)', 60], ['cucumber', 100], ['olive oil', 10]] },
+          { id: 'dinner', label: 'Dinner', items: [['tofu (firm)', 180], ['rice (cooked)', 180], ['broccoli (raw)', 110], ['carrot (raw)', 80], ['avocado', 60]] },
+          { id: 'snacks', label: 'Snacks', items: [['apple', 160], ['almonds', 20], ['dark chocolate (70-85%)', 20]] },
+        ],
+      };
+
+      const state = {
+        gender: 'female',
+        age: 30,
+        height: 168,
+        weight: 66,
+        activity: 1.55,
+        goal: 'mild_lose',
+        planStyle: 'balanced',
+        calcEntries: [
+          { id: 1, foodName: 'oats (dry)', grams: 60 },
+          { id: 2, foodName: 'milk (semi-skimmed)', grams: 200 },
+          { id: 3, foodName: 'banana', grams: 110 },
+        ],
+        nextId: 4,
+        latestPlan: [],
+      };
+
+      function calcTargets() {
+        const age = Math.max(15, Math.min(100, Number(state.age) || 15));
+        const height = Math.max(100, Math.min(250, Number(state.height) || 100));
+        const weight = Math.max(30, Math.min(300, Number(state.weight) || 30));
+        const offset = state.gender === 'male' ? 5 : -161;
+        const bmrRaw = 10 * weight + 6.25 * height - 5 * age + offset;
+        const tdeeRaw = bmrRaw * state.activity;
+        const g = GOALS[state.goal] || GOALS.maintain;
+        const rawTarget = Math.round(tdeeRaw + g.delta);
+        const clamped = rawTarget < 1200;
+        const targetCalories = Math.max(1200, rawTarget);
+        return {
+          bmr: Math.round(bmrRaw),
+          tdee: Math.round(tdeeRaw),
+          rawTarget,
+          targetCalories,
+          clamped,
+          pPct: g.p,
+          cPct: g.c,
+          fPct: g.f,
+          pG: Math.round((targetCalories * g.p / 100) / 4),
+          cG: Math.round((targetCalories * g.c / 100) / 4),
+          fG: Math.round((targetCalories * g.f / 100) / 9),
+        };
+      }
+
+      function buildMealPlan(targetCalories) {
+        const safeTarget = Math.max(1200, targetCalories);
+        const template = PLAN_TEMPLATES[state.planStyle] || PLAN_TEMPLATES.balanced;
+        let baseCal = 0;
+        template.forEach((m) => m.items.forEach(([name, g]) => {
+          const f = FOOD_MAP.get(name);
+          if (f) baseCal += (f.cal * g) / 100;
+        }));
+        const scale = baseCal > 0 ? safeTarget / baseCal : 1;
+
+        const meals = template.map((m) => ({
+          id: m.id,
+          label: m.label,
+          items: m.items.map(([name, baseG, adj]) => {
+            const food = FOOD_MAP.get(name);
+            const step = baseG <= 20 ? 1 : 5;
+            const minG = baseG <= 20 ? 3 : 20;
+            const grams = Math.max(minG, Math.round((baseG * scale) / step) * step);
+            return { food, grams, adj: Boolean(adj) };
+          }).filter((x) => x.food),
+        }));
+
+        let sumCal = 0;
+        let adjItem = null;
+        meals.forEach((m) => m.items.forEach((it) => {
+          sumCal += (it.food.cal * it.grams) / 100;
+          if (it.adj) adjItem = it;
+        }));
+        if (adjItem && adjItem.food.cal > 0) {
+          const diff = safeTarget - sumCal;
+          adjItem.grams = Math.max(30, adjItem.grams + Math.round((diff / adjItem.food.cal) * 100));
+        }
+
+        return meals.map((m) => {
+          const computed = m.items.map((it) => {
+            const factor = it.grams / 100;
+            return {
+              name: it.food.name,
+              grams: it.grams,
+              cal: it.food.cal * factor,
+              p: it.food.p * factor,
+              c: it.food.c * factor,
+              f: it.food.f * factor,
+            };
+          });
+          return {
+            id: m.id,
+            label: m.label,
+            items: computed,
+            cal: computed.reduce((s, x) => s + x.cal, 0),
+            p: computed.reduce((s, x) => s + x.p, 0),
+            c: computed.reduce((s, x) => s + x.c, 0),
+            f: computed.reduce((s, x) => s + x.f, 0),
+          };
+        });
+      }
+
+      function renderFoodOptions() {
+        const filter = document.getElementById('food-filter').value.trim().toLowerCase();
+        const select = document.getElementById('food-select');
+        const prev = select.value;
+        const list = filter ? FOODS.filter((f) => f.name.toLowerCase().includes(filter)) : FOODS;
+        select.innerHTML = list.length
+          ? list.map((f) => `<option value="${f.name}">${f.name} (${f.cal} kcal / 100g)</option>`).join('')
+          : '<option value="">No matching foods</option>';
+        if (list.some((f) => f.name === prev)) {
+          select.value = prev;
+        }
+        renderPreview();
+      }
+
+      function renderPreview() {
+        const name = document.getElementById('food-select').value;
+        const grams = Math.max(0, Number(document.getElementById('food-grams').value) || 0);
+        const food = FOOD_MAP.get(name);
+        const el = document.getElementById('calc-preview');
+        const btn = document.getElementById('btn-add-food');
+        if (!food || grams <= 0) {
+          el.textContent = 'Select a food and enter grams above 0 to preview nutrients.';
+          btn.disabled = true;
+          return;
+        }
+        btn.disabled = false;
+        const factor = grams / 100;
+        el.innerHTML = `Selected portion (${grams}g <strong>${food.name}</strong>): <span class="mono"><strong>${Math.round(food.cal * factor)} kcal</strong> · Protein ${(food.p * factor).toFixed(1)}g · Carbs ${(food.c * factor).toFixed(1)}g · Fat ${(food.f * factor).toFixed(1)}g</span>`;
+      }
+
+      function renderAll() {
+        const t = calcTargets();
+        document.getElementById('out-target-cal').textContent = t.targetCalories.toLocaleString();
+        document.getElementById('out-bmr').textContent = t.bmr.toLocaleString();
+        document.getElementById('out-tdee').textContent = t.tdee.toLocaleString();
+        document.getElementById('out-raw-cal').textContent = t.rawTarget.toLocaleString();
+        document.getElementById('floor-alert').classList.toggle('visible', t.clamped);
+
+        document.getElementById('out-split-label').textContent = `${t.pPct}% P · ${t.cPct}% C · ${t.fPct}% F`;
+        document.getElementById('bar-p').style.width = `${t.pPct}%`;
+        document.getElementById('bar-c').style.width = `${t.cPct}%`;
+        document.getElementById('bar-f').style.width = `${t.fPct}%`;
+
+        document.getElementById('out-protein-g').textContent = `${t.pG}g`;
+        document.getElementById('out-protein-kcal').textContent = `${t.pG * 4} kcal`;
+        document.getElementById('out-carbs-g').textContent = `${t.cG}g`;
+        document.getElementById('out-carbs-kcal').textContent = `${t.cG * 4} kcal`;
+        document.getElementById('out-fat-g').textContent = `${t.fG}g`;
+        document.getElementById('out-fat-kcal').textContent = `${t.fG * 9} kcal`;
+
+        // Meal Plan
+        const meals = buildMealPlan(t.targetCalories);
+        state.latestPlan = meals;
+        document.getElementById('plan-target-label').textContent = `${t.targetCalories.toLocaleString()} kcal`;
+        const pCal = meals.reduce((s, m) => s + m.cal, 0);
+        const pProt = meals.reduce((s, m) => s + m.p, 0);
+        const pCarb = meals.reduce((s, m) => s + m.c, 0);
+        const pFat = meals.reduce((s, m) => s + m.f, 0);
+
+        document.getElementById('plan-total-cal').textContent = `${Math.round(pCal).toLocaleString()} kcal`;
+        document.getElementById('plan-total-p').textContent = `${pProt.toFixed(1)} g`;
+        document.getElementById('plan-total-c').textContent = `${pCarb.toFixed(1)} g`;
+        document.getElementById('plan-total-f').textContent = `${pFat.toFixed(1)} g`;
+
+        const container = document.getElementById('meals-container');
+        container.innerHTML = meals.map((m) => `
+          <div class="meal-panel">
+            <div class="meal-head">
+              <div>
+                <h3>${m.label}</h3>
+                <p class="meal-sub mono">${Math.round(m.cal)} kcal · P ${m.p.toFixed(1)}g · C ${m.c.toFixed(1)}g · F ${m.f.toFixed(1)}g</p>
+              </div>
+              <button type="button" class="btn-ghost" data-add-meal="${m.id}">Add to Calculator</button>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Food</th>
+                  <th class="right">Grams</th>
+                  <th class="right">Calories</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${m.items.map((it) => `
+                  <tr>
+                    <td class="cap">${it.name}</td>
+                    <td class="right mono">${it.grams} g</td>
+                    <td class="right mono"><strong>${Math.round(it.cal)} kcal</strong></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `).join('');
+
+        // Calculator
+        renderCalculator(t);
+      }
+
+      function renderCalculator(t) {
+        const rows = state.calcEntries.map((entry) => {
+          const food = FOOD_MAP.get(entry.foodName);
+          if (!food) return null;
+          const factor = entry.grams / 100;
+          return {
+            id: entry.id,
+            name: food.name,
+            grams: entry.grams,
+            cal: food.cal * factor,
+            p: food.p * factor,
+            c: food.c * factor,
+            f: food.f * factor,
+          };
+        }).filter(Boolean);
+
+        const totals = rows.reduce((acc, r) => ({
+          grams: acc.grams + r.grams,
+          cal: acc.cal + r.cal,
+          p: acc.p + r.p,
+          c: acc.c + r.c,
+          f: acc.f + r.f,
+        }), { grams: 0, cal: 0, p: 0, c: 0, f: 0 });
+
+        document.getElementById('calc-logged-cal').textContent = Math.round(totals.cal).toLocaleString();
+        document.getElementById('calc-target-cal').textContent = t.targetCalories.toLocaleString();
+        document.getElementById('calc-logged-p').textContent = totals.p.toFixed(1);
+        document.getElementById('calc-target-p').textContent = t.pG;
+        document.getElementById('calc-logged-c').textContent = totals.c.toFixed(1);
+        document.getElementById('calc-target-c').textContent = t.cG;
+
+        const diff = Math.round(t.targetCalories - totals.cal);
+        const pct = Math.min(100, Math.round((totals.cal / t.targetCalories) * 100));
+        document.getElementById('calc-remaining-text').textContent = diff >= 0
+          ? `${diff.toLocaleString()} kcal remaining`
+          : `${Math.abs(diff).toLocaleString()} kcal over target`;
+        document.getElementById('calc-pct-text').textContent = `${pct}%`;
+        const fill = document.getElementById('calc-progress-fill');
+        fill.style.width = `${pct}%`;
+        fill.classList.toggle('over', diff < 0);
+
+        const wrap = document.getElementById('calc-table-wrap');
+        if (!rows.length) {
+          wrap.innerHTML = `<div class="empty-state">No foods in the meal calculator yet. Select a food and grams above to click Add, or load the sample meal plan.</div>`;
+          return;
+        }
+
+        wrap.innerHTML = `
+          <div style="overflow-x:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Food</th>
+                  <th class="right">Grams</th>
+                  <th class="right">Calories</th>
+                  <th class="right">Protein (g)</th>
+                  <th class="right">Carbs (g)</th>
+                  <th class="right">Fat (g)</th>
+                  <th class="right">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map((r) => `
+                  <tr data-row-id="${r.id}">
+                    <td class="cap"><strong>${r.name}</strong></td>
+                    <td class="right"><input type="number" min="0" max="5000" value="${r.grams}" class="mono inline-grams" data-edit-grams="${r.id}" aria-label="Grams for ${r.name}" /></td>
+                    <td class="right mono" data-cell="cal">${Math.round(r.cal)}</td>
+                    <td class="right mono" data-cell="p">${r.p.toFixed(1)}</td>
+                    <td class="right mono" data-cell="c">${r.c.toFixed(1)}</td>
+                    <td class="right mono" data-cell="f">${r.f.toFixed(1)}</td>
+                    <td class="right"><button type="button" class="btn-remove" data-remove-id="${r.id}">Remove</button></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+              <tfoot id="calc-tfoot">
+                <tr>
+                  <td>Running Total (${rows.length} items)</td>
+                  <td class="right mono" data-total="grams">${Math.round(totals.grams)} g</td>
+                  <td class="right mono" data-total="cal">${Math.round(totals.cal)} kcal</td>
+                  <td class="right mono" data-total="p">${totals.p.toFixed(1)} g</td>
+                  <td class="right mono" data-total="c">${totals.c.toFixed(1)} g</td>
+                  <td class="right mono" data-total="f">${totals.f.toFixed(1)} g</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        `;
+      }
+
+      // Event bindings
+      document.querySelectorAll('[data-gender]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          state.gender = btn.dataset.gender;
+          document.querySelectorAll('[data-gender]').forEach((b) => b.classList.toggle('active', b === btn));
+          renderAll();
+        });
+      });
+
+      document.querySelectorAll('[data-plan]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          state.planStyle = btn.dataset.plan;
+          document.querySelectorAll('[data-plan]').forEach((b) => b.classList.toggle('active', b === btn));
+          renderAll();
+        });
+      });
+
+      document.getElementById('age').addEventListener('input', (e) => { state.age = e.target.value; renderAll(); });
+      document.getElementById('height').addEventListener('input', (e) => { state.height = e.target.value; renderAll(); });
+      document.getElementById('weight').addEventListener('input', (e) => { state.weight = e.target.value; renderAll(); });
+      document.getElementById('activity').addEventListener('change', (e) => { state.activity = Number(e.target.value); renderAll(); });
+      document.getElementById('goal').addEventListener('change', (e) => { state.goal = e.target.value; renderAll(); });
+
+      document.getElementById('food-filter').addEventListener('input', renderFoodOptions);
+      document.getElementById('food-select').addEventListener('change', renderPreview);
+      document.getElementById('food-grams').addEventListener('input', renderPreview);
+
+      document.getElementById('calc-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const foodName = document.getElementById('food-select').value;
+        const grams = Math.max(0, Number(document.getElementById('food-grams').value) || 0);
+        if (!FOOD_MAP.has(foodName) || grams <= 0) return;
+        state.calcEntries.push({ id: state.nextId++, foodName, grams });
+        renderAll();
+      });
+
+      document.getElementById('meals-container').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-add-meal]');
+        if (!btn) return;
+        const meal = state.latestPlan.find((m) => m.id === btn.dataset.addMeal);
+        if (!meal) return;
+        meal.items.forEach((it) => {
+          state.calcEntries.push({ id: state.nextId++, foodName: it.name, grams: it.grams });
+        });
+        renderAll();
+      });
+
+      document.getElementById('btn-load-full-plan').addEventListener('click', () => {
+        state.calcEntries = [];
+        state.latestPlan.forEach((m) => {
+          m.items.forEach((it) => {
+            state.calcEntries.push({ id: state.nextId++, foodName: it.name, grams: it.grams });
+          });
+        });
+        renderAll();
+      });
+
+      document.getElementById('btn-clear-calc').addEventListener('click', () => {
+        state.calcEntries = [];
+        renderAll();
+      });
+
+      function updateCalcTotalsOnly(t) {
+        const rows = state.calcEntries.map((entry) => {
+          const food = FOOD_MAP.get(entry.foodName);
+          if (!food) return null;
+          const factor = entry.grams / 100;
+          return {
+            id: entry.id,
+            grams: entry.grams,
+            cal: food.cal * factor,
+            p: food.p * factor,
+            c: food.c * factor,
+            f: food.f * factor,
+          };
+        }).filter(Boolean);
+
+        const totals = rows.reduce((acc, r) => ({
+          grams: acc.grams + r.grams,
+          cal: acc.cal + r.cal,
+          p: acc.p + r.p,
+          c: acc.c + r.c,
+          f: acc.f + r.f,
+        }), { grams: 0, cal: 0, p: 0, c: 0, f: 0 });
+
+        rows.forEach((r) => {
+          const tr = document.querySelector(`tr[data-row-id="${r.id}"]`);
+          if (!tr) return;
+          tr.querySelector('[data-cell="cal"]').textContent = Math.round(r.cal);
+          tr.querySelector('[data-cell="p"]').textContent = r.p.toFixed(1);
+          tr.querySelector('[data-cell="c"]').textContent = r.c.toFixed(1);
+          tr.querySelector('[data-cell="f"]').textContent = r.f.toFixed(1);
+        });
+
+        const tfoot = document.getElementById('calc-tfoot');
+        if (tfoot) {
+          tfoot.querySelector('[data-total="grams"]').textContent = `${Math.round(totals.grams)} g`;
+          tfoot.querySelector('[data-total="cal"]').textContent = `${Math.round(totals.cal)} kcal`;
+          tfoot.querySelector('[data-total="p"]').textContent = `${totals.p.toFixed(1)} g`;
+          tfoot.querySelector('[data-total="c"]').textContent = `${totals.c.toFixed(1)} g`;
+          tfoot.querySelector('[data-total="f"]').textContent = `${totals.f.toFixed(1)} g`;
+        }
+
+        document.getElementById('calc-logged-cal').textContent = Math.round(totals.cal).toLocaleString();
+        document.getElementById('calc-target-cal').textContent = t.targetCalories.toLocaleString();
+        document.getElementById('calc-logged-p').textContent = totals.p.toFixed(1);
+        document.getElementById('calc-target-p').textContent = t.pG;
+        document.getElementById('calc-logged-c').textContent = totals.c.toFixed(1);
+        document.getElementById('calc-target-c').textContent = t.cG;
+
+        const diff = Math.round(t.targetCalories - totals.cal);
+        const pct = Math.min(100, Math.round((totals.cal / t.targetCalories) * 100));
+        document.getElementById('calc-remaining-text').textContent = diff >= 0
+          ? `${diff.toLocaleString()} kcal remaining`
+          : `${Math.abs(diff).toLocaleString()} kcal over target`;
+        document.getElementById('calc-pct-text').textContent = `${pct}%`;
+        const fill = document.getElementById('calc-progress-fill');
+        fill.style.width = `${pct}%`;
+        fill.classList.toggle('over', diff < 0);
+      }
+
+      document.getElementById('calc-table-wrap').addEventListener('input', (e) => {
+        const input = e.target.closest('[data-edit-grams]');
+        if (!input) return;
+        const id = Number(input.dataset.editGrams);
+        const grams = Math.max(0, Number(input.value) || 0);
+        const row = state.calcEntries.find((r) => r.id === id);
+        if (row) {
+          row.grams = grams;
+          updateCalcTotalsOnly(calcTargets());
+        }
+      });
+
+      document.getElementById('calc-table-wrap').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-remove-id]');
+        if (!btn) return;
+        const id = Number(btn.dataset.removeId);
+        state.calcEntries = state.calcEntries.filter((r) => r.id !== id);
+        renderAll();
+      });
+
+      document.getElementById('btn-reset-all').addEventListener('click', () => {
+        state.gender = 'female';
+        state.age = 30;
+        state.height = 168;
+        state.weight = 66;
+        state.activity = 1.55;
+        state.goal = 'mild_lose';
+        state.planStyle = 'balanced';
+        state.calcEntries = [
+          { id: state.nextId++, foodName: 'oats (dry)', grams: 60 },
+          { id: state.nextId++, foodName: 'milk (semi-skimmed)', grams: 200 },
+          { id: state.nextId++, foodName: 'banana', grams: 110 },
+        ];
+        document.getElementById('age').value = 30;
+        document.getElementById('height').value = 168;
+        document.getElementById('weight').value = 66;
+        document.getElementById('activity').value = '1.55';
+        document.getElementById('goal').value = 'mild_lose';
+        document.querySelectorAll('[data-gender]').forEach((b) => b.classList.toggle('active', b.dataset.gender === 'female'));
+        document.querySelectorAll('[data-plan]').forEach((b) => b.classList.toggle('active', b.dataset.plan === 'balanced'));
+        renderAll();
+      });
+
+      renderFoodOptions();
+      document.getElementById('food-select').value = 'chicken breast (cooked)';
+      renderPreview();
+      renderAll();
+    })();
+  </script>
+</body>
+</html>
